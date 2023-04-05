@@ -1,8 +1,7 @@
+import Button from "@/Components/button";
+import Input from "@/Components/input";
+import { cls } from "@/libs/utils";
 import { useState } from "react";
-
-function cls(...classnames: string[]) {
-  return classnames.join(" ");
-} // className에 조건식을 넣을 때 편하게 사용하는 함수 `${}` 같은 것을 안 해도 됨
 
 export default function Enter() {
   const [method, setMethod] = useState<"email" | "phone">("email");
@@ -39,36 +38,16 @@ export default function Enter() {
             </button>
           </div>
         </div>
-        <form className="flex flex-col mt-8">
-          <label className="text-sm font-medium text-gray-700">
-            {method === "email" ? "Email address" : null}
-            {method === "phone" ? "Phone number" : null}
-          </label>
-          <div className="mt-1">
-            {method === "email" ? (
-              <input
-                type="email"
-                className="appearance-none w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                required
-              />
-            ) : null}
-            {method === "phone" ? (
-              <div className="flex rounded-md shadow-sm">
-                <span className="flex items-center justify-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 select-none text-sm">
-                  +82
-                </span>
-                <input
-                  type="number"
-                  className="appearance-none w-full px-3 py-2 border border-gray-300 rounded-md rounded-l-none placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
-                  required
-                />
-              </div>
-            ) : null}
-          </div>
-          <button className=" mt-5 bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 focus:outline-none">
-            {method === "email" ? "Get login link" : null}
-            {method === "phone" ? "Get one-time password" : null}
-          </button>
+        <form className="flex flex-col mt-8 space-y-4">
+          {method === "email" ? (
+            <Input name="email" label="Emal address" type="email" required />
+          ) : null}
+          {method === "phone" ? (
+            <Input name="phone" label="Phone number" type="number" kind="phone" required />
+          ) : null}
+
+          {method === "email" ? <Button text={"Get login link"} /> : null}
+          {method === "phone" ? <Button text={"Get one-time password"} /> : null}
         </form>
         <div className="mt-8">
           <div className="relative">
