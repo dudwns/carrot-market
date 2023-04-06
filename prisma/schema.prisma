@@ -1,0 +1,23 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+ // 
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+  relationMode = "prisma" // foreign key constraint를 지원하는 작업을 prisma가 할 것으로 지정 
+}
+
+model User {
+  id Int @id @default(autoincrement()) //ID 이 model의 ID로 사용하고(식별), 자동으로 증가(1, 2, 3, 4, 5...)
+  phone Int? @unique // 전화번호, 중복x
+  email String? @unique // 이메일, 중복x
+  name String // 이름, required
+  avatar String? // 프로필 이미지
+  createAt DateTime @default(now()) //생성 날짜, 기본값은 생성 시점의 날짜
+  updateAt DateTime @updatedAt // 유저가 업데이트 될 때마다 이 field가 변할 것이다.
+}
