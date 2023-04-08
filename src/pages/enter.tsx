@@ -1,12 +1,46 @@
 import Button from "@/Components/button";
 import Input from "@/Components/input";
-import { cls } from "@/libs/utils";
+import useMutation from "@/libs/client/useMutation";
+import { cls } from "@/libs/client/utils";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+
+interface EnterForm {
+  email?: string;
+  phone?: string;
+}
 
 export default function Enter() {
+  const [enter, { loading, data, error }] = useMutation("/api/users/enter");
+  const [submitting, setSubmitting] = useState(false);
+  const { register, handleSubmit, reset } = useForm<EnterForm>();
   const [method, setMethod] = useState<"email" | "phone">("email");
-  const onEmailClick = () => setMethod("email");
-  const onPhoneClick = () => setMethod("phone");
+
+  const onEmailClick = () => {
+    reset();
+    setMethod("email");
+  };
+
+  const onPhoneClick = () => {
+    reset();
+    setMethod("phone");
+  };
+
+  const onValid = (validForm: EnterForm) => {
+    // setSubmitting(true);
+    // fetch("/api/users/enter", {
+    //   method: "POST",
+    //   body: JSON.stringify(validForm),
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   }, // req 인코딩 방식으로 인해 header를 작성해 주어야 함 (req.body.email을 받기 위해)
+    // }).then(() => {
+    //   setSubmitting(false);
+    // });
+    enter(validForm);
+  };
+  console.log(loading, data, error);
+
   return (
     <div className="mt-16 px-4">
       <h3 className="text-3xl font-bold text-center">Enter to Carrot</h3>
@@ -38,16 +72,31 @@ export default function Enter() {
             </button>
           </div>
         </div>
-        <form className="flex flex-col mt-8 space-y-4">
+        <form onSubmit={handleSubmit(onValid)} className="flex flex-col mt-8 space-y-4">
           {method === "email" ? (
-            <Input name="email" label="Emal address" type="email" required />
+            <Input
+              register={register("email", { required: true })}
+              name="email"
+              label="Emal address"
+              type="email"
+              required
+            />
           ) : null}
           {method === "phone" ? (
-            <Input name="phone" label="Phone number" type="number" kind="phone" required />
+            <Input
+              register={register("phone", { required: true })}
+              name="phone"
+              label="Phone number"
+              type="number"
+              kind="phone"
+              required
+            />
           ) : null}
 
           {method === "email" ? <Button text={"Get login link"} /> : null}
-          {method === "phone" ? <Button text={"Get one-time password"} /> : null}
+          {method === "phone" ? (
+            <Button text={submitting ? "Loading" : "Get one-time password"} />
+          ) : null}
         </form>
         <div className="mt-8">
           <div className="relative">
