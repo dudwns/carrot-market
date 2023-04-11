@@ -21,6 +21,8 @@ model User {
   createAt DateTime @default(now()) //생성 날짜, 기본값은 생성 시점의 날짜
   updateAt DateTime @updatedAt // 유저가 업데이트 될 때마다 이 field가 변할 것이다.
   tokens Token[]
+  products Product[]
+  fav Fav[]
 }
 
 model Token {
@@ -32,4 +34,32 @@ model Token {
   updateAt DateTime @updatedAt // 유저가 업데이트 될 때마다 이 field가 변할 것이다.
   
   @@index([userId])
+}
+
+model Product {
+  id Int @id @default(autoincrement())
+  user User  @relation(fields: [userId], references: [id], onDelete:Cascade)
+  userId Int
+  image String
+  name String
+  price Int
+  description String @db.MediumText
+  createAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+  favs Fav[]
+
+  @@index([userId])
+}
+
+model Fav {
+   id Int @id @default(autoincrement())
+   user User  @relation(fields: [userId], references: [id], onDelete:Cascade)
+   userId Int
+   product Product @relation(fields: [productId], references: [id], onDelete:Cascade)
+   productId Int
+   createAt DateTime @default(now())
+   updateAt DateTime @updatedAt
+   
+   @@index([userId])
+   @@index([productId])
 }
