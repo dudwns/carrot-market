@@ -43,7 +43,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) 
   });
 }
 
-export default withHandler("POST", handler);
+export default withHandler({ methods: ["POST"], handler, isPrivate: false });
 
 // upsert: 생성하거나 수정할 때 사용, 뭔가 만들 때는 x
 // create, update, where이 존재

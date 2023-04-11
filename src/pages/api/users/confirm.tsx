@@ -14,7 +14,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) 
     //   user: true, //user 정보도 받음
     // },
   });
-  if (!foundToken) return res.status(404).end(); // 토큰이 존재하지 않으면
+  if (!foundToken) return res.status(404).end(); // 토큰이 존재하지 않으면 404 반환
   req.session.user = {
     id: foundToken.userId,
   }; // user 세션을 만듦
@@ -27,6 +27,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) 
   });
   res.json({ ok: true });
 }
-export default withApiSession(withHandler("POST", handler));
+export default withApiSession(withHandler({ methods: ["POST"], handler, isPrivate: false }));
 
 // withIronSessionApiRoute로 감싸면 req.session을 확인할 수 있다.

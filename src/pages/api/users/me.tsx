@@ -15,6 +15,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) 
   });
 }
 
-export default withApiSession(withHandler("GET", handler));
+export default withApiSession(
+  withHandler({
+    methods: ["GET"],
+    handler,
+  })
+);
 
 // withIronSessionApiRoute로 감싸면 req.session을 확인할 수 있다.
