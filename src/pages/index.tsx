@@ -1,15 +1,44 @@
 import FloatingButton from "@/Components/floating-button";
 import Item from "@/Components/item";
 import Layout from "@/Components/layout";
+import useUser from "@/libs/client/useUser";
+import { Fav, Product } from "@prisma/client";
+import Head from "next/head";
+import useSWR from "swr";
+
+interface ProductWithFav extends Product {
+  _count: {
+    favs: number;
+  };
+} // Product의 모든 필드도 가지고, user 라는 User 타입 필드를 하나 더 가진다.
+
+interface ProdectsResponse {
+  ok: boolean;
+  products: ProductWithFav[];
+}
 
 export default function Home() {
+  const { user, isLoading } = useUser();
+  const { data } = useSWR<ProdectsResponse>("/api/products");
+  console.log(data);
+
   return (
     <Layout title="홈" hasTabBar>
+      <Head>
+        <title>HOME</title>
+      </Head>
       <div className="flex flex-col  space-y-5 divide-y">
-        {[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((_, i) => (
-          <Item key={i} id={i} title="iphone 14" price={99} hearts={1} comments={1} />
+        {data?.products.map((product) => (
+          <Item
+            key={product.id}
+            id={product.id}
+            title={product.name}
+            price={product.price}
+            hearts={product._count.favs}
+            comments={1}
+          />
         ))}
-        <FloatingButton href="/items/upload">
+        <FloatingButton href="/products/upload">
           <svg
             className="h-6 w-6"
             xmlns="http://www.w3.org/2000/svg"
