@@ -6,7 +6,7 @@ import Link from "next/link";
 import useSWR from "swr";
 
 interface RevieWithUser extends Review {
-  createBy: User;
+  createdBy: User;
 }
 
 interface ReviewsResponse {
@@ -17,6 +17,7 @@ interface ReviewsResponse {
 export default function Profile() {
   const { user } = useUser();
   const { data } = useSWR<ReviewsResponse>("/api/reviews");
+
   return (
     <Layout title="나의 캐럿" hasTabBar>
       <div className="px-4">
@@ -101,7 +102,7 @@ export default function Profile() {
             <div className="flex space-x-4 items-center">
               <div className="w-12 h-12 rounded-full bg-slate-500" />
               <div>
-                <h4 className="text-sm font-bold text-gray-800">{review?.createBy?.name}</h4>
+                <h4 className="text-sm font-bold text-gray-800">{review?.createdBy?.name}</h4>
                 <div className="flex items-center ">
                   {[...Array(5)].map((_, i) => (
                     <svg
