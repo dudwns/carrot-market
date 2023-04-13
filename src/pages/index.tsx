@@ -6,15 +6,15 @@ import { Fav, Product } from "@prisma/client";
 import Head from "next/head";
 import useSWR from "swr";
 
-interface ProductWithFav extends Product {
+export interface ProductWithCount extends Product {
   _count: {
     favs: number;
   };
-} // Product의 모든 필드도 가지고, user 라는 User 타입 필드를 하나 더 가진다.
+}
 
 interface ProdectsResponse {
   ok: boolean;
-  products: ProductWithFav[];
+  products: ProductWithCount[];
 }
 
 export default function Home() {
@@ -28,14 +28,13 @@ export default function Home() {
         <title>HOME</title>
       </Head>
       <div className="flex flex-col  space-y-5 divide-y">
-        {data?.products.map((product) => (
+        {data?.products?.map((product) => (
           <Item
             key={product.id}
             id={product.id}
             title={product.name}
             price={product.price}
             hearts={product._count.favs}
-            comments={1}
           />
         ))}
         <FloatingButton href="/products/upload">
