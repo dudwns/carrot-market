@@ -9,13 +9,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) 
   } = req;
   const reviews = await client.review.findMany({
     where: {
-      createForId: user?.id,
+      createdForId: user?.id,
     },
-    include: {
-      createBy: { select: { id: true, name: true, avatar: true } },
-    },
+    include: { createdBy: { select: { id: true, name: true, avatar: true } } },
   });
-
   res.json({
     ok: true,
     reviews,
@@ -28,5 +25,4 @@ export default withApiSession(
     handler,
   })
 );
-
 // withIronSessionApiRoute로 감싸면 req.session을 확인할 수 있다.
