@@ -28,12 +28,13 @@ export default function ItemDetail() {
     router.query.id ? `/api/products/${router.query.id}` : null
   );
   const [toggleFav, { loading }] = useMutation(`/api/products/${router.query.id}/fav`);
-  const onFacoriteClick = () => {
+  const onFacvoriteClick = () => {
     if (!data) return;
-    boundMutate({ ...data, isLiked: !data.isLiked }, false); // 캐싱된 data를 수정, 두 번째 인자는 재검증 유무 (API 재요청)
+
     // mutate("/api/users/me", (prev: any) => ({ ok: !prev.ok }), false); // 전역적으로 요청한 key의 data를 수정 가능
     if (!loading) {
       toggleFav({});
+      boundMutate({ ...data, isLiked: !data.isLiked }, false); // 캐싱된 data를 수정, 두 번째 인자는 재검증 유무 (API 재요청)
     }
   };
 
@@ -60,7 +61,7 @@ export default function ItemDetail() {
             <div className="flex items-center justify-between space-x-2">
               <Button large text="Talk to seller" />
               <button
-                onClick={onFacoriteClick}
+                onClick={onFacvoriteClick}
                 className={cls(
                   "p-3 rounded-md flex items-center justify-center hover:bg-gray-100",
                   data?.isLiked
@@ -105,9 +106,9 @@ export default function ItemDetail() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Similar items</h2>
           <div className="mt-6 grid grid-cols-2 gap-4">
-            {data?.relatedProducts?.map((product) => (
-              <Link href={`/products/${product.id}`}>
-                <div key={product.id}>
+            {data?.relatedProducts.map((product) => (
+              <Link href={`/products/${product.id}`} key={product.id}>
+                <div>
                   <div className="h-56 w-full mb-4 bg-slate-300" />
                   <h3 className=" text-gray-700 -mb-1">{product.name}</h3>
                   <span className="text-sm font-medium text-gray-900">${product.price}</span>
