@@ -77,7 +77,7 @@ export default function Enter() {
               required
             />
 
-            <Button text={tokenLoading ? "Loading" : "Confirm Token "} />
+            <Button loading={loading} text="Confirm Token " />
           </form>
         ) : (
           <>
