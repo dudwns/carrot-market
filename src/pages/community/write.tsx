@@ -1,13 +1,45 @@
 import Button from "@/Components/button";
 import Layout from "@/Components/layout";
 import TextArea from "@/Components/textarea";
+import useCoords from "@/libs/client/useCoords";
+import useMutation from "@/libs/client/useMutation";
+import { Post } from "@prisma/client";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+
+interface WriteForm {
+  question: string;
+}
+
+interface WriteResponse {
+  ok: boolean;
+  post: Post;
+}
 
 export default function Write() {
+  const { latitude, longitude } = useCoords();
+  const router = useRouter();
+  const { register, handleSubmit } = useForm<WriteForm>();
+  const [post, { loading, data }] = useMutation<WriteResponse>("/api/posts");
+  const onValid = (data: WriteForm) => {
+    if (loading) return;
+    post({ ...data, latitude, longitude });
+  };
+  useEffect(() => {
+    if (data && data.ok) {
+      router.push(`/community/${data.post.id}`);
+    }
+  }, [data, router]);
   return (
-    <Layout canGoBack>
-      <form className="p-4 space-y-4">
-        <TextArea required placeholder="질문해 보세요!" />
-        <Button text="submit" />
+    <Layout canGoBack title="Write Post">
+      <form onSubmit={handleSubmit(onValid)} className="p-4 space-y-4">
+        <TextArea
+          register={register("question", { required: true, minLength: 5 })}
+          required
+          placeholder="Ask a question!"
+        />
+        <Button loading={loading} text="Submit" />
       </form>
     </Layout>
   );
