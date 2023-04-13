@@ -23,7 +23,9 @@ export default function Profile() {
         <div className="flex items-center mt-4 space-x-3">
           <div className="w-16 h-16 bg-slate-500 rounded-full" />
           <div className="flex flex-col">
-            <span className="font-medium text-gray-900">{user?.name}</span>
+            <span className="font-medium text-gray-900">
+              {user?.name ? user?.name : "Loading..."}
+            </span>
             <Link href="/profile/edit">
               <span className="text-sm text-gray-700">Edit profile &rarr;</span>
             </Link>
