@@ -131,7 +131,7 @@ export default function Enter() {
 
               {method === "email" ? <Button text={"Get login link"} /> : null}
               {method === "phone" ? (
-                <Button text={loading ? "Loading" : "Get one-time password"} />
+                <Button loading={loading} text="Get one-time password" />
               ) : null}
             </form>
           </>
