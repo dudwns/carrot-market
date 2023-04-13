@@ -1,9 +1,15 @@
+import { User } from "@prisma/client";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 
+interface ProfileResponse {
+  ok: boolean;
+  profile: User;
+}
+
 export default function useUser() {
-  const { data, error } = useSWR("/api/users/me"); // 2개의 인자가 필요, 첫 번째는 요청을 보낼 URL(캐시를 저장할 때 사용할 Key이기도 함), 두 번째는 fetcher 함수
+  const { data, error } = useSWR<ProfileResponse>("/api/users/me"); // 2개의 인자가 필요, 첫 번째는 요청을 보낼 URL(캐시를 저장할 때 사용할 Key이기도 함), 두 번째는 fetcher 함수
   const router = useRouter();
   useEffect(() => {
     if (data && !data.ok) {
