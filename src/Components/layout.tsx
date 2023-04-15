@@ -120,11 +120,11 @@ export default function Layout({ title, canGoBack, hasTabBar, children }: Layout
             </div>
           </Link>
 
-          <Link href="/live">
+          <Link href="/streams">
             <div
               className={cls(
                 "flex flex-col items-center space-y-2",
-                router.pathname === "/live"
+                router.pathname === "/streams"
                   ? "text-orange-500"
                   : "hover:text-gray-500 transition-colors"
               )}
