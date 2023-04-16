@@ -9,8 +9,26 @@ async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) 
     body: { name, price, description },
   } = req;
   if (req.method === "POST") {
+    // const {
+    //   uid,
+    //   rtmps: { streamKey, url },
+    // } = await (
+    //   await fetch(
+    //     `https://api.cloudflare.com/client/v4/accounts/${process.env.CF_ID}/stream/live_inputs`,
+    //     {
+    //       method: "POST",
+    //       headers: {
+    //         Authorization: `Bearer ${process.env.CF_STREAM_TOKEN}`,
+    //       },
+    //       body: `{"meta": {"name":"${name}"},"recording": { "mode": "automatic", "timeoutSeconds": 10}}`,
+    //     }
+    //   )
+    // ).json();
     const stream = await client.stream.create({
       data: {
+        // cloudflareId: uid,
+        // cloudflareKey: streamKey,
+        // cloudflareUrl: url,
         name,
         price,
         description,
@@ -28,7 +46,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) 
   } else if (req.method === "GET") {
     const streams = await client.stream.findMany({
       take: 10, // 10개의 항목만 가져옴
-      skip: 20, // 앞에 data 20개를 스킵하고 21번째 부터 시작
+      // skip: 20, // 앞에 data 20개를 스킵하고 21번째 부터 시작
     });
     res.json({
       ok: true,
