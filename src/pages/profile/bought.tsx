@@ -1,4 +1,3 @@
-import Item from "@/Components/item";
 import Layout from "@/Components/layout";
 import ProductList from "@/Components/product-list";
 
