@@ -1,24 +1,51 @@
 import Layout from "@/Components/layout";
+import { Chat, User } from "@prisma/client";
+import Image from "next/image";
 import Link from "next/link";
+import useSWR from "swr";
+
+interface ChatWithUser extends Chat {
+  createdFor: User;
+}
+
+interface ChatResponse {
+  ok: boolean;
+  chats: ChatWithUser[];
+}
 
 export default function Chats() {
+  const { data, isLoading } = useSWR<ChatResponse>("/api/chats");
   return (
     <Layout title="채팅" hasTabBar>
-      <div className="divide-y-[1px] ">
-        {[1, 2, 3, 4, 5, 6, 7].map((_, i) => (
-          <div>
-            <Link href={`/chats/${i}`} key={i}>
-              <div className="flex px-4  cursor-pointer py-3 items-center space-x-3 ">
-                <div className="w-12 h-12 rounded-full bg-slate-300" />
-                <div>
-                  <p className="text-gray-700">Steve Jebs</p>
-                  <p className="text-sm  text-gray-500">내일 오후 2시에 홍대에서 만나요.</p>
+      {isLoading ? (
+        <span className="flex justify-center mt-3">Loading...</span>
+      ) : (
+        <div className="divide-y-[1px] ">
+          {data?.chats?.map((chat) => (
+            <div key={chat.id}>
+              <Link href={`/chats/${chat.id}`}>
+                <div className="flex px-4  cursor-pointer py-3 items-center space-x-3 ">
+                  {chat?.createdFor?.avatar ? (
+                    <Image
+                      src={chat.createdFor.avatar}
+                      alt="프로필 이미지"
+                      width={200}
+                      height={200}
+                      className="w-12 h-12 rounded-full bg-slate-500"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-slate-500" />
+                  )}
+                  <div>
+                    <p className="text-gray-700">{chat?.createdFor?.name}</p>
+                    <p className="text-sm  text-gray-500">내일 오후 2시에 홍대에서 만나요.</p>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          </div>
-        ))}
-      </div>
+              </Link>
+            </div>
+          ))}
+        </div>
+      )}
     </Layout>
   );
 }
