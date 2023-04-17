@@ -81,13 +81,8 @@ export default function Upload() {
       <form className="p-4 space-y-4" onSubmit={handleSubmit(onvalid)}>
         <div>
           {photoPrivews ? (
-            <div className="relative h-96">
-              <Image
-                src={photoPrivews}
-                alt="제품 이미지"
-                layout="fill"
-                className=" bg-slate-300 object-cover"
-              />
+            <div className="relative pb-96 ">
+              <Image src={photoPrivews} alt="제품 이미지" layout="fill" className="bg-slate-300" />
             </div>
           ) : (
             <label className="w-full cursor-pointer text-gray-600 hover:border-orange-500 hover:text-orange-500 flex items-center justify-center border-2 border-dashed border-gray-300 h-48 rounded-md">
