@@ -12,27 +12,31 @@ interface StreamsResponse {
 }
 
 export default function Streams() {
-  const { data } = useSWR<StreamsResponse>(`/api/streams`);
+  const { data, isLoading } = useSWR<StreamsResponse>(`/api/streams`);
   return (
     <Layout title="라이브" hasTabBar>
       <div className="divide-y-[1px] space-y-4">
-        {data?.streams?.map((stream) => (
-          <div key={stream.id}>
-            <Link href={`/streams/${stream?.id}`} key={stream?.id}>
-              <div className="pt-4 px-4 block">
-                <div className="relative overflow-hidden w-full rounded-md shadow-sm bg-slate-300 aspect-video">
-                  <Image
-                    layout="fill"
-                    src={`https://videodelivery.net/${stream.cloudflareId}/thumbnails/thumbnail.jpg?height=320`}
-                    alt="썸네일"
-                  />
-                </div>
+        {isLoading ? (
+          <span className="flex justify-center mt-3">Loading...</span>
+        ) : (
+          data?.streams?.map((stream) => (
+            <div key={stream.id}>
+              <Link href={`/streams/${stream?.id}`} key={stream?.id}>
+                <div className="pt-4 px-4 block">
+                  <div className="relative overflow-hidden w-full rounded-md shadow-sm bg-slate-300 aspect-video">
+                    <Image
+                      layout="fill"
+                      src={`https://videodelivery.net/${stream.cloudflareId}/thumbnails/thumbnail.jpg?height=320`}
+                      alt="썸네일"
+                    />
+                  </div>
 
-                <h1 className="text-2xl mt-2 font-bold text-gray-900">{stream?.name}</h1>
-              </div>
-            </Link>
-          </div>
-        ))}
+                  <h1 className="text-2xl mt-2 font-bold text-gray-900">{stream?.name}</h1>
+                </div>
+              </Link>
+            </div>
+          ))
+        )}
         <FloatingButton href="/streams/create">
           <svg
             className="w-6 h-6"
