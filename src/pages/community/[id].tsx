@@ -3,6 +3,7 @@ import TextArea from "@/Components/textarea";
 import useMutation from "@/libs/client/useMutation";
 import { cls } from "@/libs/client/utils";
 import { Answer, Post, User } from "@prisma/client";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -88,11 +89,21 @@ export default function CommunityPostDetail() {
           동네질문
         </span>
         <div className="flex mb-3 px-4 cursor-pointer pb-3  border-b items-center space-x-3">
-          <div className="w-10 h-10 rounded-full bg-slate-300" />
+          {data?.post?.user?.avatar ? (
+            <Image
+              src={data?.post?.user?.avatar}
+              alt="프로필 이미지"
+              width={200}
+              height={200}
+              className="w-10 h-10 bg-slate-500 rounded-full"
+            />
+          ) : (
+            <div className="w-10 h-10 bg-slate-500 rounded-full" />
+          )}
           <div>
             <p className="text-sm font-medium text-gray-700">{data?.post?.user?.name}</p>
             <Link href={`/users/profiles/${data?.post?.user?.id}`}>
-              <p className="text-xs font-medium text-gray-500">View profile &rarr;</p>
+              <p className="text-xs font-medium text-gray-500">프로필 보기</p>
             </Link>
           </div>
         </div>
@@ -147,10 +158,22 @@ export default function CommunityPostDetail() {
         <div className="px-4 my-5 space-y-5">
           {data?.post?.answers?.map((answer) => (
             <div key={answer.id} className="flex items-start space-x-3">
-              <div className="w-8 h-8 bg-slate-200 rounded-full" />
+              {answer?.user?.avatar ? (
+                <Image
+                  src={answer.user.avatar}
+                  alt="프로필 이미지"
+                  width={200}
+                  height={200}
+                  className="w-10 h-10 bg-slate-500 rounded-full"
+                />
+              ) : (
+                <div className="w-10 h-10 bg-slate-500 rounded-full" />
+              )}
               <div>
                 <span className="text-sm block font-medium text-gray-700">{answer.user.name}</span>
-                <span className="text-xs text-gray-500 block ">{String(answer.createdAt)}</span>
+                <span className="text-xs text-gray-500 block ">
+                  {String(answer.createdAt).slice(0, 10)}
+                </span>
                 <p className="text-gray-700 mt-2">{answer.answer} </p>
               </div>
             </div>
@@ -161,7 +184,7 @@ export default function CommunityPostDetail() {
             name="description"
             placeholder="Answer this question!"
             required
-            register={register("answer", { required: true, minLength: 5 })}
+            register={register("answer", { required: true })}
           />
           <button className="mt-2 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 focus:outline-none ">
             {answerLoading ? "Loading..." : "Reply"}

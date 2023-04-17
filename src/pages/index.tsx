@@ -4,7 +4,9 @@ import Layout from "@/Components/layout";
 import useUser from "@/libs/client/useUser";
 import { Fav, Product } from "@prisma/client";
 import Head from "next/head";
+import Image from "next/image";
 import useSWR from "swr";
+import boldak from "../../public/boldak.jpg";
 
 export interface ProductWithCount extends Product {
   _count: {
@@ -18,7 +20,6 @@ interface ProdectsResponse {
 }
 
 export default function Home() {
-  const { user, isLoading } = useUser();
   const { data } = useSWR<ProdectsResponse>("/api/products");
   console.log(data);
 
@@ -27,11 +28,13 @@ export default function Home() {
       <Head>
         <title>HOME</title>
       </Head>
+
       <div className="flex flex-col  space-y-5 divide-y">
         {data?.products?.map((product) => (
           <Item
             key={product.id}
             id={product.id}
+            image={product.image}
             title={product.name}
             price={product.price}
             hearts={product._count.favs}

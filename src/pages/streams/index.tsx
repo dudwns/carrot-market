@@ -1,6 +1,7 @@
 import FloatingButton from "@/Components/floating-button";
 import Layout from "@/Components/layout";
 import { Stream } from "@prisma/client";
+import Image from "next/image";
 import Link from "next/link";
 import useSWR from "swr";
 
@@ -19,7 +20,14 @@ export default function Streams() {
           <div key={stream.id}>
             <Link href={`/streams/${stream?.id}`} key={stream?.id}>
               <div className="pt-4 px-4 block">
-                <div className="w-full rounded-md shadow-sm bg-slate-300 aspect-video" />
+                <div className="relative overflow-hidden w-full rounded-md shadow-sm bg-slate-300 aspect-video">
+                  <Image
+                    layout="fill"
+                    src={`https://videodelivery.net/${stream.cloudflareId}/thumbnails/thumbnail.jpg?height=320`}
+                    alt="썸네일"
+                  />
+                </div>
+
                 <h1 className="text-2xl mt-2 font-bold text-gray-900">{stream?.name}</h1>
               </div>
             </Link>

@@ -4,6 +4,7 @@ import useMutation from "@/libs/client/useMutation";
 import useUser from "@/libs/client/useUser";
 import { cls } from "@/libs/client/utils";
 import { Product, User } from "@prisma/client";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import useSWR from "swr";
@@ -42,13 +43,34 @@ export default function ItemDetail() {
     <Layout canGoBack>
       <div className="px-4 py-10">
         <div className="mb-8">
-          <div className="h-96 bg-slate-300" />
+          {data?.product?.image ? (
+            <div className="relative h-96">
+              <Image
+                src={data.product.image}
+                alt="제품 이미지"
+                layout="fill"
+                className=" bg-slate-300 object-cover"
+              />
+            </div>
+          ) : (
+            <div className="h-96 bg-slate-300" />
+          )}
           <div className="flex cursor-pointer py-3 border-t border-b items-center space-x-3 ">
-            <div className="w-12 h-12 rounded-full bg-slate-300" />
+            {data?.product?.user?.avatar ? (
+              <Image
+                src={data.product.user.avatar}
+                alt="프로필 이미지"
+                width={200}
+                height={200}
+                className=" w-12 h-12 rounded-full bg-slate-500"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-slate-500" />
+            )}
             <div>
               <p className="text-sm font-medium text-gray-700">{data?.product?.user?.name}</p>
               <Link href={`/users/profiles/${data?.product?.user?.id}`}>
-                <span className="text-xs -font-medium text-gray-500">View profile &rarr;</span>
+                <span className="text-xs -font-medium text-gray-500">프로필 보기</span>
               </Link>
             </div>
           </div>
@@ -109,7 +131,19 @@ export default function ItemDetail() {
             {data?.relatedProducts.map((product) => (
               <Link href={`/products/${product.id}`} key={product.id}>
                 <div>
-                  <div className="h-56 w-full mb-4 bg-slate-300" />
+                  {product?.image ? (
+                    <>
+                      <Image
+                        src={product.image}
+                        alt="제품 이미지"
+                        width={224}
+                        height={224}
+                        className=" bg-slate-300 w-56 h-56 object-cover"
+                      />
+                    </>
+                  ) : (
+                    <div className="h-56 w-full mb-4 bg-slate-300" />
+                  )}
                   <h3 className=" text-gray-700 -mb-1">{product.name}</h3>
                   <span className="text-sm font-medium text-gray-900">${product.price}</span>
                 </div>
