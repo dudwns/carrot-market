@@ -1,12 +1,9 @@
 import FloatingButton from "@/Components/floating-button";
 import Item from "@/Components/item";
 import Layout from "@/Components/layout";
-import useUser from "@/libs/client/useUser";
-import { Fav, Product } from "@prisma/client";
+import { Product } from "@prisma/client";
 import Head from "next/head";
-import Image from "next/image";
 import useSWR from "swr";
-import boldak from "../../public/boldak.jpg";
 
 export interface ProductWithCount extends Product {
   _count: {
@@ -20,7 +17,7 @@ interface ProdectsResponse {
 }
 
 export default function Home() {
-  const { data } = useSWR<ProdectsResponse>("/api/products");
+  const { data, isLoading } = useSWR<ProdectsResponse>("/api/products");
   console.log(data);
 
   return (
@@ -29,17 +26,21 @@ export default function Home() {
         <title>HOME</title>
       </Head>
 
-      <div className="flex flex-col  space-y-5 divide-y">
-        {data?.products?.map((product) => (
-          <Item
-            key={product.id}
-            id={product.id}
-            image={product.image}
-            title={product.name}
-            price={product.price}
-            hearts={product._count.favs}
-          />
-        ))}
+      <div className="flex flex-col  space-y-5 divide-y ">
+        {isLoading ? (
+          <span className="flex justify-center mt-3">Loading...</span>
+        ) : (
+          data?.products?.map((product) => (
+            <Item
+              key={product.id}
+              id={product.id}
+              image={product.image!}
+              title={product.name}
+              price={product.price}
+              hearts={product._count.favs}
+            />
+          ))
+        )}
         <FloatingButton href="/products/upload">
           <svg
             className="h-6 w-6"
