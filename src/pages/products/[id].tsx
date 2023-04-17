@@ -3,12 +3,12 @@ import Layout from "@/Components/layout";
 import useMutation from "@/libs/client/useMutation";
 import useUser from "@/libs/client/useUser";
 import { cls } from "@/libs/client/utils";
-import { Product, User } from "@prisma/client";
+import { Chat, Product, User } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
 import useSWR from "swr";
-import { useSWRConfig } from "swr";
 
 interface ProductWithUser extends Product {
   user: User;
@@ -21,6 +21,11 @@ interface ItemDetailResponse {
   isLiked: boolean;
 }
 
+interface ChatMutateResponse {
+  ok: boolean;
+  chat: Chat;
+}
+
 export default function ItemDetail() {
   const { user, isLoading } = useUser();
   const router = useRouter();
@@ -29,6 +34,8 @@ export default function ItemDetail() {
     router.query.id ? `/api/products/${router.query.id}` : null
   );
   const [toggleFav, { loading }] = useMutation(`/api/products/${router.query.id}/fav`);
+  const [createdChat, { data: chatData, loading: chatLoading }] =
+    useMutation<ChatMutateResponse>(`/api/chats`);
   const onFacvoriteClick = () => {
     if (!data) return;
 
@@ -38,6 +45,10 @@ export default function ItemDetail() {
       boundMutate({ ...data, isLiked: !data.isLiked }, false); // 캐싱된 data를 수정, 두 번째 인자는 재검증 유무 (API 재요청)
     }
   };
+  useEffect(() => {
+    if (!chatData) return;
+    router.push(`/chats/${chatData.chat.id}`);
+  }, [chatData, router]);
 
   return (
     <Layout canGoBack>
@@ -49,7 +60,7 @@ export default function ItemDetail() {
                 src={data.product.image}
                 alt="제품 이미지"
                 layout="fill"
-                className=" bg-slate-300 object-cover"
+                className=" bg-slate-300 "
               />
             </div>
           ) : (
@@ -81,7 +92,17 @@ export default function ItemDetail() {
             <span className="text-3xl mt-3 text-gray-900 block">${data?.product?.price}</span>
             <p className="text-base my-6 text-gray-700">{data?.product?.description}</p>
             <div className="flex items-center justify-between space-x-2">
-              <Button large text="Talk to seller" />
+              <Button
+                large
+                text="판매자와 대화하기"
+                loading={chatLoading}
+                onClick={async () => {
+                  await createdChat({
+                    productId: router.query.id,
+                    receivedId: data?.product?.user?.id,
+                  });
+                }}
+              />
               <button
                 onClick={onFacvoriteClick}
                 className={cls(
@@ -132,15 +153,13 @@ export default function ItemDetail() {
               <Link href={`/products/${product.id}`} key={product.id}>
                 <div>
                   {product?.image ? (
-                    <>
-                      <Image
-                        src={product.image}
-                        alt="제품 이미지"
-                        width={224}
-                        height={224}
-                        className=" bg-slate-300 w-56 h-56 object-cover"
-                      />
-                    </>
+                    <Image
+                      src={product.image}
+                      alt="제품 이미지"
+                      width={224}
+                      height={224}
+                      className=" bg-slate-300 w-56 h-56 object-cover"
+                    />
                   ) : (
                     <div className="h-56 w-full mb-4 bg-slate-300" />
                   )}
