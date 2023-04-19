@@ -1,6 +1,7 @@
 import { ProductWithCount } from "@/pages";
 import useSWR from "swr";
 import Item from "./item";
+import { useRouter } from "next/router";
 
 interface ProductListProps {
   kind: "favs" | "sales" | "purchases";
@@ -16,13 +17,16 @@ interface ProductListResponse {
 }
 
 export default function ProductList({ kind }: ProductListProps) {
-  const { data } = useSWR<ProductListResponse>(`/api/users/me/${kind}`);
+  const router = useRouter();
+  const { data } = useSWR<ProductListResponse>(
+    router?.query?.id ? `/api/users/${router.query.id}/${kind}` : null
+  );
   return data ? (
     <>
       {data[kind]?.map((record) => (
         <Item
           id={record?.product?.id}
-          image={record?.product?.image}
+          image={record?.product?.image!}
           key={record?.id}
           title={record?.product?.name}
           price={record?.product?.price}
