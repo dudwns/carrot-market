@@ -1,11 +1,12 @@
 import Layout from "@/Components/layout";
-import { Chat, User } from "@prisma/client";
+import { Chat, ChatMessage, User } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import useSWR from "swr";
 
 interface ChatWithUser extends Chat {
   createdFor: User;
+  chatMessages: ChatMessage[];
 }
 
 interface ChatResponse {
@@ -15,6 +16,7 @@ interface ChatResponse {
 
 export default function Chats() {
   const { data, isLoading } = useSWR<ChatResponse>("/api/chats");
+  console.log();
   return (
     <Layout title="채팅" hasTabBar>
       {isLoading ? (
@@ -38,7 +40,7 @@ export default function Chats() {
                   )}
                   <div>
                     <p className="text-gray-700">{chat?.createdFor?.name}</p>
-                    <p className="text-sm  text-gray-500">내일 오후 2시에 홍대에서 만나요.</p>
+                    <p className="text-sm  text-gray-500">{chat?.chatMessages[0]?.message}</p>
                   </div>
                 </div>
               </Link>
