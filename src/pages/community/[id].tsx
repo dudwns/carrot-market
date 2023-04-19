@@ -102,7 +102,7 @@ export default function CommunityPostDetail() {
           )}
           <div>
             <p className="text-sm font-medium text-gray-700">{data?.post?.user?.name}</p>
-            <Link href={`/users/profiles/${data?.post?.user?.id}`}>
+            <Link href={`/profile/${data?.post?.user?.id}`}>
               <p className="text-xs font-medium text-gray-500">프로필 보기</p>
             </Link>
           </div>
