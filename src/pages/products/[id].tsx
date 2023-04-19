@@ -3,7 +3,7 @@ import Layout from "@/Components/layout";
 import useMutation from "@/libs/client/useMutation";
 import useUser from "@/libs/client/useUser";
 import { cls } from "@/libs/client/utils";
-import { Chat, Product, User } from "@prisma/client";
+import { Chat, Product, Reservation, User } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -26,6 +26,22 @@ interface ChatMutateResponse {
   chat: Chat;
 }
 
+interface ReserveResponse {
+  ok: boolean;
+  isReserved: boolean;
+  reserve: Reservation;
+}
+
+interface ReserveMutateResponse {
+  ok: boolean;
+  isReserved: boolean;
+}
+
+interface SaleResponse {
+  ok: boolean;
+  isSale: boolean;
+}
+
 export default function ItemDetail() {
   const { user, isLoading } = useUser();
   const router = useRouter();
@@ -36,6 +52,21 @@ export default function ItemDetail() {
   const [toggleFav, { loading }] = useMutation(`/api/products/${router.query.id}/fav`);
   const [createdChat, { data: chatData, loading: chatLoading }] =
     useMutation<ChatMutateResponse>(`/api/chats`);
+  const { data: saleData, mutate: saleMutate } = useSWR<SaleResponse>(
+    `/api/products/${router.query.id}/sale`
+  );
+  const [addSale, { loading: saleMutationLoading }] = useMutation<SaleResponse>(
+    `/api/products/${router.query.id}/sale`
+  );
+  const {
+    data: reserveData,
+    isLoading: reserveLoading,
+    mutate: reserveMutate,
+  } = useSWR<ReserveResponse>(
+    router.query.id ? `/api/products/${router.query.id}/reservation` : null
+  );
+  const [reserved, { data: reserveMutateData, loading: reserveMutateLoading }] =
+    useMutation<ReserveMutateResponse>(`/api/products/${router.query.id}/reservation`);
   const onFacvoriteClick = () => {
     if (!data) return;
 
@@ -50,23 +81,65 @@ export default function ItemDetail() {
     router.push(`/chats/${chatData.chat.id}`);
   }, [chatData, router]);
 
+  const chatClick = () => {
+    createdChat({
+      productId: router.query.id,
+      receivedId: data?.product?.user?.id,
+    });
+  };
+
+  const reserveClick = () => {
+    if (reserveMutateLoading) return;
+    reserveMutate(
+      (prev) =>
+        prev && {
+          ...prev,
+          isReserved: !prev.isReserved,
+        },
+      false
+    );
+    reserved({});
+  };
+  reserveData?.reserve?.userId;
+  const saleClick = () => {
+    if (saleMutationLoading) return;
+    saleMutate();
+    addSale({ userId: data?.product?.user?.id, productId: router.query.id });
+  };
+
   return (
     <Layout canGoBack>
       <div className="px-4 py-10">
         <div className="mb-8">
-          {data?.product?.image ? (
-            <div className="relative h-96">
-              <Image
-                src={data.product.image}
-                alt="제품 이미지"
-                layout="fill"
-                className=" bg-slate-300 "
-              />
-            </div>
-          ) : (
-            <div className="h-96 bg-slate-300" />
-          )}
-          <div className="flex cursor-pointer py-3 border-t border-b items-center space-x-3 ">
+          <div className="relative">
+            {data?.product?.image ? (
+              <div className="relative h-96">
+                <Image
+                  src={data.product.image}
+                  alt="제품 이미지"
+                  layout="fill"
+                  className=" bg-slate-300 relative "
+                />
+              </div>
+            ) : (
+              <div className="h-96 relative bg-slate-300" />
+            )}
+            {reserveData?.isReserved && !saleData?.isSale ? (
+              <div className="absolute top-0 flex justify-center items-center w-full h-96 border-2 z-10 opacity-30 bg-black">
+                <span className="text-lg text-white">예약된 상품</span>
+              </div>
+            ) : (
+              ""
+            )}
+            {saleData?.isSale ? (
+              <div className="absolute top-0 flex justify-center items-center w-full h-96 border-2 z-10 opacity-30 bg-black">
+                <span className="text-lg text-white">판매 종료</span>
+              </div>
+            ) : (
+              ""
+            )}
+          </div>
+          <div className="flex py-3 border-t border-b items-center space-x-3 ">
             {data?.product?.user?.avatar ? (
               <Image
                 src={data.product.user.avatar}
@@ -80,8 +153,8 @@ export default function ItemDetail() {
             )}
             <div>
               <p className="text-sm font-medium text-gray-700">{data?.product?.user?.name}</p>
-              <Link href={`/users/profiles/${data?.product?.user?.id}`}>
-                <span className="text-xs -font-medium text-gray-500">프로필 보기</span>
+              <Link href={`/profile/${data?.product?.user?.id}`}>
+                <span className="text-xs font-medium text-gray-500">프로필 보기</span>
               </Link>
             </div>
           </div>
@@ -92,17 +165,29 @@ export default function ItemDetail() {
             <span className="text-3xl mt-3 text-gray-900 block">${data?.product?.price}</span>
             <p className="text-base my-6 text-gray-700">{data?.product?.description}</p>
             <div className="flex items-center justify-between space-x-2">
-              <Button
-                large
-                text="판매자와 대화하기"
-                loading={chatLoading}
-                onClick={async () => {
-                  await createdChat({
-                    productId: router.query.id,
-                    receivedId: data?.product?.user?.id,
-                  });
-                }}
-              />
+              {data?.product?.user?.id === user?.id ? (
+                <Button
+                  isSale={saleData?.isSale}
+                  large
+                  text={saleData?.isSale ? "판매 종료" : "판매 종료하기"}
+                  loading={chatLoading}
+                  onClick={saleClick}
+                />
+              ) : (
+                <Button large text="판매자와 대화하기" loading={chatLoading} onClick={chatClick} />
+              )}
+
+              {data?.product?.user?.id !== user?.id && !reserveData?.isReserved ? (
+                <Button large text="예약하기" onClick={reserveClick} />
+              ) : data?.product?.user?.id !== user?.id &&
+                reserveData?.reserve?.userId === user?.id &&
+                reserveData?.isReserved ? (
+                <Button large text="예약취소" onClick={reserveClick} />
+              ) : data?.product?.user?.id !== user?.id &&
+                reserveData?.isReserved &&
+                reserveData?.reserve?.userId !== user?.id ? (
+                <Button large text="이미 예약됨" isSale={true} />
+              ) : null}
               <button
                 onClick={onFacvoriteClick}
                 className={cls(
@@ -147,7 +232,7 @@ export default function ItemDetail() {
           </div>
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Similar items</h2>
+          <h2 className="text-2xl font-bold text-gray-900">유사한 제품</h2>
           <div className="mt-6 grid grid-cols-2 gap-4">
             {data?.relatedProducts.map((product) => (
               <Link href={`/products/${product.id}`} key={product.id}>
