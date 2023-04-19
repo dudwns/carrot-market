@@ -1,3 +1,4 @@
+import useUser from "@/libs/client/useUser";
 import { cls } from "@/libs/client/utils";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -12,10 +13,10 @@ interface LayoutProps {
 export default function Layout({ title, canGoBack, hasTabBar, children }: LayoutProps) {
   const router = useRouter();
   const onClick = () => router.back();
-
+  const { user } = useUser();
   return (
     <div>
-      <div className="bg-white w-full h-12 max-w-xl justify-center text-lg px-10 font-medium  fixed text-gray-800 border-b top-0  flex items-center">
+      <div className="bg-white w-full h-12 max-w-xl justify-center text-lg px-10 font-medium  fixed text-gray-800 border-b top-0  flex items-center z-20">
         {canGoBack ? (
           <button onClick={onClick} className="absolute left-4">
             <svg
@@ -147,7 +148,7 @@ export default function Layout({ title, canGoBack, hasTabBar, children }: Layout
             </div>
           </Link>
 
-          <Link href="/profile">
+          <Link href={`/profile/${user?.id}`}>
             <div
               className={cls(
                 "flex flex-col items-center space-y-2",
