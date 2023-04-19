@@ -1,9 +1,11 @@
+import Button from "@/Components/button";
 import Layout from "@/Components/layout";
 import useUser from "@/libs/client/useUser";
 import { cls } from "@/libs/client/utils";
 import { Review, User } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import useSWR from "swr";
 
 interface RevieWithUser extends Review {
@@ -15,18 +17,29 @@ interface ReviewsResponse {
   reviews: RevieWithUser[];
 }
 
+interface ProfileResponse {
+  ok: boolean;
+  profile: User;
+}
+
 export default function Profile() {
   const { user } = useUser();
-  const { data } = useSWR<ReviewsResponse>("/api/reviews");
+  const router = useRouter();
+  const { data } = useSWR<ReviewsResponse>(
+    router?.query?.id ? `/api/reviews/${router.query.id}` : null
+  );
+  const { data: profileData } = useSWR<ProfileResponse>(
+    router?.query?.id ? `/api/users/profiles/${router.query.id}` : null
+  );
 
   return (
-    <Layout title="나의 캐럿" hasTabBar>
+    <Layout title={Number(router.query.id) === user?.id ? "나의 캐럿" : "프로필"} hasTabBar>
       <div className="px-4">
         <div className="flex items-center mt-4 space-x-3">
-          {user?.avatar ? (
+          {profileData?.profile?.avatar ? (
             <>
               <Image
-                src={user?.avatar}
+                src={profileData?.profile?.avatar}
                 alt="프로필 이미지"
                 width={200}
                 height={200}
@@ -39,15 +52,17 @@ export default function Profile() {
 
           <div className="flex flex-col">
             <span className="font-medium text-gray-900">
-              {user?.name ? user?.name : "Loading..."}
+              {user?.name ? profileData?.profile?.name : "Loading..."}
             </span>
-            <Link href="/profile/edit">
-              <span className="text-sm text-gray-700">프로필 편집</span>
-            </Link>
+            {Number(router.query.id) === user?.id ? (
+              <Link href="/profile/edit">
+                <span className="text-sm text-gray-500 font-medium">프로필 편집</span>
+              </Link>
+            ) : null}
           </div>
         </div>
-        <div className="mt-10 flex justify-around">
-          <Link href="/profile/sold">
+        <div className="mt-10 flex justify-around mb-8">
+          <Link href={`/profile/${router.query.id}/sold`}>
             <div className="flex flex-col items-center">
               <div className="w-14 h-14 text-white bg-orange-500 rounded-full flex items-center justify-center">
                 <svg
@@ -68,7 +83,7 @@ export default function Profile() {
               <span className="text-sm mt-2 font-medium text-gray-700">판매내역</span>
             </div>
           </Link>
-          <Link href="/profile/bought">
+          <Link href={`/profile/${router.query.id}/bought`}>
             <div className="flex flex-col items-center">
               <div className="w-14 h-14 text-white bg-orange-500 rounded-full flex items-center justify-center">
                 <svg
@@ -89,7 +104,7 @@ export default function Profile() {
               <span className="text-sm mt-2 font-medium text-gray-700">구매내역</span>
             </div>
           </Link>
-          <Link href="/profile/loved">
+          <Link href={`/profile/${router.query.id}/loved`}>
             <div className="flex flex-col items-center">
               <div className="w-14 h-14 text-white bg-orange-500 rounded-full flex items-center justify-center">
                 <svg
@@ -111,10 +126,27 @@ export default function Profile() {
             </div>
           </Link>
         </div>
+        <Button
+          text="리뷰 쓰기"
+          onClick={() => {
+            router.push(`/profile/review/${router.query.id}`);
+          }}
+        ></Button>
         {data?.reviews?.map((review) => (
           <div key={review?.id} className="mt-12">
             <div className="flex space-x-4 items-center">
-              <div className="w-12 h-12 rounded-full bg-slate-500" />
+              {review?.createdBy?.avatar ? (
+                <Image
+                  src={review.createdBy.avatar}
+                  alt="프로필 이미지"
+                  width={200}
+                  height={200}
+                  className="w-12 h-12 rounded-full bg-slate-500"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-slate-500" />
+              )}
+
               <div>
                 <h4 className="text-sm font-bold text-gray-800">{review?.createdBy?.name}</h4>
                 <div className="flex items-center ">

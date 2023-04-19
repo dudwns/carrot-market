@@ -5,29 +5,31 @@ import { withApiSession } from "@/libs/server/withSession";
 
 async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) {
   const {
-    session: { user },
+    query: { id },
   } = req;
 
-  const sales = await client.sale.findMany({
-    where: {
-      userId: user?.id,
-    },
-    include: {
-      product: {
-        include: {
-          _count: {
-            select: {
-              favs: true,
+  if (req.method === "GET") {
+    const sales = await client.sale.findMany({
+      where: {
+        userId: Number(id),
+      },
+      include: {
+        product: {
+          include: {
+            _count: {
+              select: {
+                favs: true,
+              },
             },
           },
         },
       },
-    },
-  });
-  res.json({
-    ok: true,
-    sales,
-  });
+    });
+    res.json({
+      ok: true,
+      sales,
+    });
+  }
 }
 
 export default withApiSession(

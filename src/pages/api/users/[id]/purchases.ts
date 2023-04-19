@@ -5,17 +5,29 @@ import { withApiSession } from "@/libs/server/withSession";
 
 async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) {
   const {
-    session: { user },
+    query: { id },
   } = req;
-  const reviews = await client.review.findMany({
+
+  const purchases = await client.purchase.findMany({
     where: {
-      createdForId: user?.id,
+      userId: Number(id),
     },
-    include: { createdBy: { select: { id: true, name: true, avatar: true } } },
+    include: {
+      product: {
+        include: {
+          _count: {
+            select: {
+              favs: true,
+            },
+          },
+        },
+      },
+    },
   });
+
   res.json({
     ok: true,
-    reviews,
+    purchases,
   });
 }
 
@@ -25,4 +37,5 @@ export default withApiSession(
     handler,
   })
 );
+
 // withIronSessionApiRoute로 감싸면 req.session을 확인할 수 있다.
