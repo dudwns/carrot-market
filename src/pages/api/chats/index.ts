@@ -22,6 +22,17 @@ async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) 
             avatar: true,
           },
         },
+        chatMessages: {
+          select: {
+            id: true,
+            message: true,
+            chatId: true,
+          },
+          orderBy: {
+            id: "desc",
+          },
+          take: 1,
+        },
       },
     });
     res.json({ ok: true, chats });
