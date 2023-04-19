@@ -24,12 +24,14 @@ interface MessageResponse {
 export default function ChatDetail() {
   const { user } = useUser();
   const router = useRouter();
-  const [createdMessage, { data, loading }] = useMutation(`/api/chats/messages/${router.query.id}`);
+  const [createdMessage, { data, loading }] = useMutation(
+    router?.query?.id ? `/api/chats/messages/${router.query.id}` : ""
+  );
   const {
     data: messageData,
     isLoading,
     mutate,
-  } = useSWR<MessageResponse>(`/api/chats/messages/${router.query.id}`);
+  } = useSWR<MessageResponse>(router?.query?.id ? `/api/chats/messages/${router.query.id}` : "");
 
   const { register, handleSubmit, reset } = useForm<MessageForm>();
   const onValid = ({ message }: MessageForm) => {
@@ -57,6 +59,11 @@ export default function ChatDetail() {
             avatarUrl={message.user.avatar ? message.user.avatar : ""}
           />
         ))}
+        {!messageData?.messages.length ? (
+          <span className="w-full flex justify-center text-gray-500">
+            상대방에게 메시지를 보내보세요!
+          </span>
+        ) : null}
         <form
           onSubmit={handleSubmit(onValid)}
           className="fixed py-2 bg-white   bottom-0 inset-x-0 "
