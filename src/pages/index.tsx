@@ -18,7 +18,6 @@ interface ProdectsResponse {
 
 export default function Home() {
   const { data, isLoading } = useSWR<ProdectsResponse>("/api/products");
-  console.log(data);
 
   return (
     <Layout title="홈" hasTabBar>
