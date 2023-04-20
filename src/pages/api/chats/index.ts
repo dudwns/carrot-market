@@ -22,6 +22,13 @@ async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) 
             avatar: true,
           },
         },
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
         chatMessages: {
           select: {
             id: true,
@@ -41,7 +48,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) 
   if (req.method === "POST") {
     const chatDuplicated = await client.chat.findFirst({
       where: {
-        AND: [{ createdById: user?.id }, { createdForId: +receivedId }, { productId: +productId }],
+        AND: [{ createdById: user?.id }, { createdForId: +receivedId }],
       },
     });
 
