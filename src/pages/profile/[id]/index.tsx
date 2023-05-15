@@ -2,11 +2,14 @@ import Button from "@/Components/button";
 import Layout from "@/Components/layout";
 import useUser from "@/libs/client/useUser";
 import { cls } from "@/libs/client/utils";
+import { withSsrSession } from "@/libs/server/withSession";
 import { Review, User } from "@prisma/client";
+import { NextPage, NextPageContext } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import useSWR from "swr";
+import useSWR, { SWRConfig } from "swr";
+import client from "@/libs/server/client";
 
 interface RevieWithUser extends Review {
   createdBy: User;
@@ -22,24 +25,24 @@ interface ProfileResponse {
   profile: User;
 }
 
-export default function Profile() {
+function Profile() {
   const { user } = useUser();
   const router = useRouter();
   const { data } = useSWR<ReviewsResponse>(
     router?.query?.id ? `/api/reviews/${router.query.id}` : null
   );
-  const { data: profileData } = useSWR<ProfileResponse>(
-    router?.query?.id ? `/api/users/profiles/${router.query.id}` : null
-  );
+  // const { data: profileData } = useSWR<ProfileResponse>(
+  //   router?.query?.id ? `/api/users/profiles/${router.query.id}` : null
+  // );
 
   return (
     <Layout title={Number(router.query.id) === user?.id ? "나의 캐럿" : "프로필"} hasTabBar>
       <div className="px-4">
         <div className="flex items-center mt-4 space-x-3">
-          {profileData?.profile?.avatar ? (
+          {user?.avatar ? (
             <>
               <Image
-                src={profileData?.profile?.avatar}
+                src={user?.avatar}
                 alt="프로필 이미지"
                 width={200}
                 height={200}
@@ -52,7 +55,7 @@ export default function Profile() {
 
           <div className="flex flex-col">
             <span className="font-medium text-gray-900">
-              {user?.name ? profileData?.profile?.name : "Loading..."}
+              {user?.name ? user?.name : "Loading..."}
             </span>
             {Number(router.query.id) === user?.id ? (
               <Link href="/profile/edit">
@@ -177,3 +180,32 @@ export default function Profile() {
     </Layout>
   );
 }
+
+const Page: NextPage<{ profile: User }> = ({ profile }) => {
+  return (
+    <SWRConfig
+      value={{
+        fallback: {
+          "/api/users/me": { ok: true, profile },
+        },
+      }}
+    >
+      <Profile />
+    </SWRConfig>
+  );
+};
+
+export const getServerSideProps = withSsrSession(async function ({ req }: NextPageContext) {
+  const profile = await client.user.findUnique({
+    where: {
+      id: req?.session.user?.id,
+    },
+  });
+  return {
+    props: {
+      profile: JSON.parse(JSON.stringify(profile)),
+    },
+  };
+});
+
+export default Page;
