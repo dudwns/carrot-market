@@ -39,7 +39,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) 
       },
     });
   }
-
+  await res.revalidate(`/community/${id}`);
   res.json({
     ok: true,
   });

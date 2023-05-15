@@ -4,11 +4,13 @@ import useMutation from "@/libs/client/useMutation";
 import useUser from "@/libs/client/useUser";
 import { cls } from "@/libs/client/utils";
 import { Chat, Product, Reservation, User } from "@prisma/client";
+import { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import useSWR from "swr";
+import client from "@/libs/server/client";
 
 interface ProductWithUser extends Product {
   user: User;
@@ -42,7 +44,7 @@ interface SaleResponse {
   isSale: boolean;
 }
 
-export default function ItemDetail() {
+const ItemDetail: NextPage<ItemDetailResponse> = ({ product, relatedProducts, isLiked }) => {
   const { user, isLoading } = useUser();
   const router = useRouter();
   // const { mutate } = useSWRConfig();
@@ -84,7 +86,7 @@ export default function ItemDetail() {
   const chatClick = () => {
     createdChat({
       productId: router.query.id,
-      receivedId: data?.product?.user?.id,
+      receivedId: product?.user?.id,
     });
   };
 
@@ -104,18 +106,18 @@ export default function ItemDetail() {
   const saleClick = () => {
     if (saleMutationLoading) return;
     saleMutate();
-    addSale({ userId: data?.product?.user?.id, productId: router.query.id });
+    addSale({ userId: product?.user?.id, productId: router.query.id });
   };
 
   return (
-    <Layout canGoBack>
+    <Layout canGoBack seoTitle="Product Detail">
       <div className="px-4 py-10">
         <div className="mb-8">
           <div className="relative">
-            {data?.product?.image ? (
+            {product?.image ? (
               <div className="relative h-96">
                 <Image
-                  src={data.product.image}
+                  src={product.image}
                   alt="제품 이미지"
                   layout="fill"
                   className=" bg-slate-300 relative "
@@ -140,9 +142,9 @@ export default function ItemDetail() {
             )}
           </div>
           <div className="flex py-3 border-t border-b items-center space-x-3 ">
-            {data?.product?.user?.avatar ? (
+            {product?.user?.avatar ? (
               <Image
-                src={data.product.user.avatar}
+                src={product.user.avatar}
                 alt="프로필 이미지"
                 width={200}
                 height={200}
@@ -152,8 +154,8 @@ export default function ItemDetail() {
               <div className="w-12 h-12 rounded-full bg-slate-500" />
             )}
             <div>
-              <p className="text-sm font-medium text-gray-700">{data?.product?.user?.name}</p>
-              <Link href={`/profile/${data?.product?.user?.id}`}>
+              <p className="text-sm font-medium text-gray-700">{product?.user?.name}</p>
+              <Link href={`/profile/${product?.user?.id}`}>
                 <span className="text-xs font-medium text-gray-500">프로필 보기</span>
               </Link>
             </div>
@@ -162,10 +164,10 @@ export default function ItemDetail() {
             <h1 className="text-3xl font-bold text-gray-900">
               {data ? data?.product?.name : "Loading..."}
             </h1>
-            <span className="text-3xl mt-3 text-gray-900 block">${data?.product?.price}</span>
-            <p className="text-base my-6 text-gray-700">{data?.product?.description}</p>
+            <span className="text-3xl mt-3 text-gray-900 block">${product?.price}</span>
+            <p className="text-base my-6 text-gray-700">{product?.description}</p>
             <div className="flex items-center justify-between space-x-2">
-              {data?.product?.user?.id === user?.id ? (
+              {product?.user?.id === user?.id ? (
                 <Button
                   isSale={saleData?.isSale}
                   large
@@ -177,7 +179,7 @@ export default function ItemDetail() {
                 <Button large text="판매자와 대화하기" loading={chatLoading} onClick={chatClick} />
               )}
 
-              {data?.product?.user?.id !== user?.id && !reserveData?.isReserved ? (
+              {product?.user?.id !== user?.id && !reserveData?.isReserved ? (
                 <Button large text="예약하기" onClick={reserveClick} />
               ) : data?.product?.user?.id !== user?.id &&
                 reserveData?.reserve?.userId === user?.id &&
@@ -197,7 +199,7 @@ export default function ItemDetail() {
                     : "text-gray-400 hover:text-gray-500"
                 )}
               >
-                {data?.isLiked ? (
+                {isLiked ? (
                   <svg
                     className="w-6 h-6"
                     fill="currentColor"
@@ -234,7 +236,7 @@ export default function ItemDetail() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">유사한 제품</h2>
           <div className="mt-6 grid grid-cols-2 gap-4">
-            {data?.relatedProducts.map((product) => (
+            {relatedProducts.map((product) => (
               <Link href={`/products/${product.id}`} key={product.id}>
                 <div>
                   {product?.image ? (
@@ -258,4 +260,71 @@ export default function ItemDetail() {
       </div>
     </Layout>
   );
-}
+};
+
+export const getStaticPaths: GetStaticPaths = () => {
+  return {
+    paths: [], // 빌드할 때 페이지를 생성하지 않음
+    fallback: "blocking", // 해당 페이지에 첫번째로 방문한 사람은 NextJS가 파일 시스템을 확인하고 아직 HTML 페이지가 없다는 것을 확인할 때 까지 기다림
+    // 그 후 서버사이드 렌더링을 진행하고 정적 HTML 파일을 생성해서 보여줌, 최초에 한번만 실행되고 그 다음부터는 이미 만들어져있기 때문에 기다리지 않아도 됨
+  };
+};
+
+export const getStaticProps: GetStaticProps = async (ctx) => {
+  if (!ctx?.params?.id) {
+    return {
+      props: {},
+    };
+  }
+  const product = await client.product.findUnique({
+    where: {
+      id: Number(ctx.params.id),
+    },
+    include: {
+      user: {
+        // 유저 정보도 포함해서 가져옴
+        select: {
+          // id, name, avatar만 가져옴
+          id: true,
+          name: true,
+          avatar: true,
+        },
+      },
+    },
+  });
+  const terms = product?.name.split(" ").map((word) => ({
+    name: {
+      contains: word,
+    },
+  }));
+  const relatedProducts = await client.product.findMany({
+    where: {
+      OR: terms,
+      AND: {
+        id: {
+          not: product?.id,
+        },
+      },
+    },
+  });
+  const isLiked = false; //Boolean(
+  //   await client.fav.findFirst({
+  //     where: {
+  //       productId: product?.id,
+  //       userId: user?.id,
+  //     },
+  //     select: {
+  //       id: true,
+  //     },
+  //   })
+  // );
+  return {
+    props: {
+      product: JSON.parse(JSON.stringify(product)),
+      relatedProducts: JSON.parse(JSON.stringify(relatedProducts)),
+      isLiked,
+    },
+  };
+};
+
+export default ItemDetail;

@@ -22,6 +22,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) 
         },
       },
     });
+
+    await res.revalidate("/community"); // post 요청이 있을 때 community 페이지를 재생성
+
     res.json({
       ok: true,
       post,

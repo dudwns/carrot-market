@@ -25,6 +25,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse<ResponseType>) 
       answer,
     },
   });
+  await res.revalidate(`/community/${id}`);
   res.json({
     ok: true,
     answer: newAnswer,

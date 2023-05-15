@@ -3,12 +3,14 @@ import TextArea from "@/Components/textarea";
 import useMutation from "@/libs/client/useMutation";
 import { cls } from "@/libs/client/utils";
 import { Answer, Post, User } from "@prisma/client";
+import { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import useSWR from "swr";
+import useSWR, { SWRConfig } from "swr";
+import client from "@/libs/server/client";
 
 interface AnswerWithUser extends Answer {
   user: User;
@@ -38,7 +40,7 @@ interface AnswerResponse {
   response: Answer;
 }
 
-export default function CommunityPostDetail() {
+const CommunityPostDetail: NextPage = () => {
   const router = useRouter();
   const { register, handleSubmit, reset } = useForm<AnswerForm>();
   const { data, mutate } = useSWR<CommunityPostResponse>(
@@ -193,4 +195,87 @@ export default function CommunityPostDetail() {
       </div>
     </Layout>
   );
-}
+};
+
+const Page: NextPage<{ post: CommunityPostResponse; params: number }> = ({ post, params }) => {
+  return (
+    <SWRConfig
+      value={{
+        fallback: {
+          ["/api/posts/" + params]: { ok: true, post },
+        },
+      }}
+    >
+      <CommunityPostDetail />
+    </SWRConfig>
+  );
+};
+
+export const getStaticPaths: GetStaticPaths = () => {
+  return {
+    paths: [],
+    fallback: "blocking",
+  };
+};
+
+export const getStaticProps: GetStaticProps = async (ctx) => {
+  if (!ctx?.params?.id) {
+    return {
+      props: {},
+    };
+  }
+  const post = await client.post.findUnique({
+    where: {
+      id: Number(ctx.params.id),
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+        },
+      },
+      answers: {
+        select: {
+          answer: true,
+          id: true,
+          createdAt: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          answers: true,
+          wonderings: true,
+        },
+      },
+    },
+  });
+  const isWondering = false;
+  //Boolean(
+  //   await client.wondering.findFirst({
+  //     where: {
+  //       userId: user?.id,
+  //       postId: Number(id),
+  //     },
+  //     select: {
+  //       id: true,
+  //     },
+  //   })
+  // );
+  return {
+    props: {
+      post: JSON.parse(JSON.stringify(post)),
+      params: ctx.params.id,
+    },
+  };
+};
+
+export default Page;
