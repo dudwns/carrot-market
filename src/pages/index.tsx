@@ -3,7 +3,9 @@ import Item from "@/Components/item";
 import Layout from "@/Components/layout";
 import { Product } from "@prisma/client";
 import Head from "next/head";
-import useSWR from "swr";
+import useSWR, { SWRConfig } from "swr";
+import client from "@/libs/server/client";
+import { NextPage } from "next";
 
 export interface ProductWithCount extends Product {
   _count: {
@@ -16,8 +18,8 @@ interface ProdectsResponse {
   products: ProductWithCount[];
 }
 
-export default function Home() {
-  const { data, isLoading } = useSWR<ProdectsResponse>("/api/products");
+const Home: NextPage = () => {
+  const { data } = useSWR<ProdectsResponse>("/api/products");
 
   return (
     <Layout title="홈" hasTabBar>
@@ -26,20 +28,18 @@ export default function Home() {
       </Head>
 
       <div className="flex flex-col  space-y-5 divide-y ">
-        {isLoading ? (
-          <span className="flex justify-center mt-3">Loading...</span>
-        ) : (
-          data?.products?.map((product) => (
-            <Item
-              key={product.id}
-              id={product.id}
-              image={product.image!}
-              title={product.name}
-              price={product.price}
-              hearts={product._count.favs}
-            />
-          ))
-        )}
+        {data
+          ? data?.products?.map((product) => (
+              <Item
+                key={product.id}
+                id={product.id}
+                image={product.image!}
+                title={product.name}
+                price={product.price}
+                hearts={product._count?.favs || 0}
+              />
+            ))
+          : "Loading..."}
         <FloatingButton href="/products/upload">
           <svg
             className="h-6 w-6"
@@ -60,4 +60,32 @@ export default function Home() {
       </div>
     </Layout>
   );
+};
+
+const Page: NextPage<{ products: ProductWithCount[] }> = ({ products }) => {
+  return (
+    <SWRConfig
+      value={{
+        fallback: {
+          "/api/products": {
+            ok: true,
+            products,
+          },
+        },
+      }} // 캐시 초기값 설정
+    >
+      <Home />
+    </SWRConfig>
+  );
+};
+
+export async function getServerSideProps() {
+  const products = await client.product.findMany({});
+  return {
+    props: {
+      products: JSON.parse(JSON.stringify(products)),
+    },
+  };
 }
+
+export default Page;
