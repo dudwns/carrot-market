@@ -12,7 +12,7 @@ export function middleware(req: NextRequest, ev: NextFetchEvent) {
   }
   if (req.nextUrl.pathname.startsWith("/chats")) {
     // chats 하위 폴더에서만 미들웨어 적용
-    console.log("chats ONLY middleware");
+    // console.log("chats ONLY middleware");
   }
   if (!req.url.includes("/api")) {
     if (!req.url.includes("/enter") && !req.cookies.get("carrotsession")) {
