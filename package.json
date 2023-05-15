@@ -17,15 +17,19 @@
     "eslint": "8.37.0",
     "eslint-config-next": "13.2.4",
     "firebase": "^9.19.1",
+    "gray-matter": "^4.0.3",
     "iron-session": "^6.3.1",
     "next": "13.2.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.43.9",
+    "remark-html": "^15.0.2",
+    "remark-parse": "^10.0.1",
     "swr": "^2.1.2",
     "ts-node": "^10.9.1",
     "twilio": "^4.10.0",
-    "typescript": "5.0.3"
+    "typescript": "5.0.3",
+    "unified": "^10.1.2"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.14",
