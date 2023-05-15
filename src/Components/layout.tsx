@@ -1,5 +1,6 @@
 import useUser from "@/libs/client/useUser";
 import { cls } from "@/libs/client/utils";
+import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
@@ -8,14 +9,18 @@ interface LayoutProps {
   canGoBack?: boolean;
   hasTabBar?: boolean;
   children: React.ReactNode;
+  seoTitle?: string;
 }
 
-export default function Layout({ title, canGoBack, hasTabBar, children }: LayoutProps) {
+export default function Layout({ title, canGoBack, hasTabBar, children, seoTitle }: LayoutProps) {
   const router = useRouter();
   const onClick = () => router.back();
   const { user } = useUser();
   return (
     <div>
+      <Head>
+        <title>{seoTitle} | Carrot Market</title>
+      </Head>
       <div className="bg-white w-full h-12 max-w-xl justify-center text-lg px-10 font-medium  fixed text-gray-800 border-b top-0  flex items-center z-20">
         {canGoBack ? (
           <button onClick={onClick} className="absolute left-4">
@@ -180,4 +185,4 @@ export default function Layout({ title, canGoBack, hasTabBar, children }: Layout
   );
 }
 
-// Layout: 공통으로 사용되는 UI 컴포넌트를 layout 파일안에 위치시키면 불필요한 리렌더링을 방지를 하고 컴포넌트간의 상호 작용을 쉽게 구현할 수 있다.
+// layout.tsx: 각각의 페이지에 대한 공통으로 사용되는 UI 컴포넌트를 layout 파일안에 위치시키면 불필요한 리렌더링을 방지를 하고 컴포넌트간의 상호 작용을 쉽게 구현할 수 있다.
