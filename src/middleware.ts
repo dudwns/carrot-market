@@ -16,9 +16,13 @@ export function middleware(req: NextRequest, ev: NextFetchEvent) {
   }
   if (!req.url.includes("/api")) {
     if (!req.url.includes("/enter") && !req.cookies.get("carrotsession")) {
-      NextResponse.redirect(new URL("/enter", req.url));
+      return NextResponse.redirect(new URL("/enter", req.url));
     }
   }
 
   return NextResponse.next();
 }
+
+export const config = {
+  matcher: "/",
+};
